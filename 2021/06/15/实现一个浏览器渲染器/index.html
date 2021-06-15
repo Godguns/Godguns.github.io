@@ -278,9 +278,8 @@
 <p>作为一名前端er，浏览器和我们在工作中几乎是抬头不见低头见，除了高效的实现一些web功能以外，我们还需要深入浏览器，去了解一些原理知识，那我们就在这里一起讨论学习一下浏览器的渲染知识，最后实现一个浏览器对html的解析器   </p>
 </blockquote>
 <h3 id="Critical-Rendering-Path"><a href="#Critical-Rendering-Path" class="headerlink" title="Critical Rendering Path"></a>Critical Rendering Path</h3><p>Critical Rendering Path，中文翻译过来，叫做关键渲染路径。指的是浏览器从请求HTML，CSS，JavaScript文件开始，到将它们最终以像素输出到屏幕上这一过程。   </p>
-<blockquote>
-<p>我们知道浏览器解析html文件的时候，其实是根据html文件，分析标签，然后生成ast（抽象语法树），然后根据ast再生成对应的dom树，同时负责css进程的部分分析css文件，生成cssom树 (CSS Object Model，CSS对象模型)，构建过程类似DOM，当HTML解析中遇到<link>标签时，会请求对应的CSS文件，当CSS文件就位时便开始解析它（如果遇到行内<style>时则直接解析），这一解析过程可以和构建DOM同时进行。 </p>
-</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我们知道浏览器解析html文件的时候，其实是根据html文件，分析标签，然后生成ast（抽象语法树），然后根据ast再生成对应的dom树，同时负责css进程的部分分析css文件，生成cssom树 (CSS Object Model，CSS对象模型)，构建过程类似DOM，当HTML解析中遇到&lt;link&gt;标签时，会请求对应的CSS文件，当CSS文件就位时便开始解析它（如果遇到行内&lt;style&gt;时则直接解析），这一解析过程可以和构建DOM同时进行。 </span><br></pre></td></tr></table></figure>
+
 <h2 id="构建dom"><a href="#构建dom" class="headerlink" title="构建dom"></a>构建dom</h2><p><img src="https://user-gold-cdn.xitu.io/2020/4/19/1719037507bd68b5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="image"></p>
 <h2 id="构建css"><a href="#构建css" class="headerlink" title="构建css"></a>构建css</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">假设有如下CSS代码：</span><br><span class="line"></span><br><span class="line">body &#123; font-size: 16px &#125;</span><br><span class="line">p &#123; font-weight: bold &#125;</span><br><span class="line">span &#123; color: red &#125;</span><br><span class="line">p span &#123; display: none &#125;</span><br><span class="line">img &#123; float: right &#125;</span><br></pre></td></tr></table></figure>
 
