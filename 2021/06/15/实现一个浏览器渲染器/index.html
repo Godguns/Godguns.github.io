@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		
+<title>探索浏览器渲染器原理-Godguns</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" type="image/x-icon" href="/image/logo.ico">
+
+
+<meta name="keywords" content="web前端,js 渲染器,vue模版编译,浏览器原理,">
+<meta name="description" content="采用简约大方的扁平化Hexo-Quiet主题">
+
+
+<script src="/js/jquery.min.js"></script>
+
+
+	<meta name="generator" content="Hexo 5.4.0"></head>
+
+	<body>
+		
+<link rel="stylesheet" href="/css/page.css">
+
+
+<link rel="stylesheet" href="/css/page_cente.css">
+
+
+<link rel="stylesheet" href="/css/atom-one-dark.css">
+
+
+<link rel="stylesheet" href="/css/header.css">
+
+	<div class="header">
+		<div class="header-top">
+			<div class="h-left">
+				<a href="/">
+					<img src="/image/logo.svg" alt="Quiet">
+				</a>
+			</div>
+			<div class="h-right">
+				<ul>
+					
+						
+								<li>
+									<a href="/">
+										首页
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+						
+								<li>
+									<a href="/archives">
+										时光轴
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+						
+								<li>
+									<a href="/categories">
+										分类
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+						
+								<li>
+									<a href="/tags">
+										标签
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+						
+								<li>
+									<a href="/links">
+										链接
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+						
+								<li>
+									<a href="/about">
+										关于
+									</a>
+									<span class="dot"></span>
+								</li>
+								
+									
+				</ul>
+			</div>
+			<div class="h-right-close">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+					<path fill="none" d="M0 0h24v24H0z" />
+					<path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" fill="rgba(68,68,68,1)" />
+				</svg>
+			</div>
+		</div>
+	</div>
+	<div class="sidebar">
+    <div class="topo">
+        <h2>Godguns</h2>
+    </div>
+    <ul>
+        
+        <li>
+            <a href="/">首页</a>
+        </li>
+        
+        <li>
+            <a href="/archives">时光轴</a>
+        </li>
+        
+        <li>
+            <a href="/categories">分类</a>
+        </li>
+        
+        <li>
+            <a href="/tags">标签</a>
+        </li>
+        
+        <li>
+            <a href="/links">链接</a>
+        </li>
+        
+        <li>
+            <a href="/about">关于</a>
+        </li>
+        
+    </ul>
+    <div class="my_foot">
+        
+        <a target="_blank" rel="noopener" href="https://github.com/qiaobug">
+            <img src="https://cdn.jsdelivr.net/gh/duogongneng/MyBlogImg/imggithub.png" alt="Quiet主题">
+        </a>
+        
+    </div>
+</div>
+<div class='shelter'
+    style='cursor: pointer;display: none; position: fixed;left: 0;top: 0; right: 0;bottom: 0;background-color: #333;opacity:0.5;z-index: 108;'>
+</div>
+<style>
+    .sidebar {
+        width: 0;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #fff;
+        z-index: 999;
+        text-align: center;
+        box-shadow: -6px 0 20px rgba(98, 94, 94, .815)
+    }
+
+    .topo {
+        width: 100%;
+        height: 200px;
+        background: url(https://api.ixiaowai.cn/gqapi/gqapi.php) no-repeat;
+        background-size: 100% 100%;
+        position: relative;
+        display: flex;
+        align-items: flex-end
+    }
+
+    .topo h2 {
+        color: #fff;
+        z-index: 1;
+        position: relative;
+        margin: 0 0 10px 10px;
+        font-size: 1.2em;
+        box-sizing: border-box
+    }
+
+    .topo:before {
+        content: '';
+        background-image: url(/image/pattern.png);
+        background-repeat: repeat;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 1
+    }
+
+    .sidebar ul {
+        width: 100%;
+        margin-top: 50px
+    }
+
+    .sidebar ul li {
+        height: 50px;
+        list-style: none;
+        font-size: 1.2em;
+        text-align: right;
+        margin-right: 10px
+    }
+
+    .sidebar ul li a {
+        display: grid;
+        color: #5d606a;
+        text-overflow: ellipsis;
+        width: 100%;
+        text-decoration: none
+    }
+
+    .my_foot {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        position: absolute;
+        bottom: 0
+    }
+
+    .my_foot a {
+        text-decoration: none;
+        margin-right: 10px;
+        display: inline-block
+    }
+
+    .my_foot a img {
+        width: 30px;
+        height: 30px
+    }
+</style>
+
+<script>
+    $(function () { $('.h-right-close>svg').click(function () { $('.sidebar').animate({ width: "66%" }, 500); $('.shelter').fadeIn("slow") }); $('.shelter').click(function (e) { $('.sidebar').animate({ width: "0" }, 500); $('.shelter').fadeOut("slow") }) })
+</script>
+		<script>
+			$(function () { $(window).scroll(function () { if ($(document).scrollTop() > 100) { $(".header-top").removeClass("header-move2"); $('.header-top').addClass('header-move1') } else { $(".header-top").removeClass("header-move1"); $('.header-top').addClass('header-move2') } }) });
+		</script>
+<div class="header-bg bg-content-img">
+    <div class="bg-content">
+        <ul class="tag">
+            
+            
+            <li><a href="/tags/web前端">web前端</a></li>
+            
+            <li><a href="/tags/js 渲染器">js 渲染器</a></li>
+            
+            <li><a href="/tags/vue模版编译">vue模版编译</a></li>
+            
+            <li><a href="/tags/浏览器原理">浏览器原理</a></li>
+            
+            
+        </ul>
+        <h1>探索浏览器渲染器原理</h1>
+        <div class="article-info">
+            <div class="article-author">
+                
+                <svg t="1604839279282" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                    xmlns="http://www.w3.org/2000/svg" p-id="2901" width="20" height="20">
+                    <path
+                        d="M513 956.3c-247.7 0-448-200.3-448-448S265.3 66.2 513 66.2s448 200.3 448 448-200.3 442.1-448 442.1z m0-830.9c-212.2 0-388.8 170.7-388.8 388.8C124.2 726.3 294.9 903 513 903c212.2 0 388.8-170.7 388.8-388.8S725.2 125.4 513 125.4z m0 430.2c-94.2 0-170.7-76.5-170.7-170.7S418.8 207.8 513 207.8s170.7 76.5 170.7 170.7S607.2 555.6 513 555.6z m0-289.1c-64.6 0-112 52.8-112 112s47.4 117.9 112 117.9 112-52.8 112-112-47.4-117.9-112-117.9z m0 689.8c-135.7 0-259-58.7-341.9-158.9l-11.8-17.8 11.8-17.8c76.5-117.9 206.2-188.5 347.8-188.5 135.7 0 265 64.6 341.9 182.6l11.8 17.8-11.8 17.8C778 897.1 648.7 956.3 513 956.3zM230.3 773.2C300.9 849.7 406.9 897 513 897c112 0 218.1-47.4 288.6-129.8-70.5-88.2-170.7-135.6-282.7-135.6s-218.1 53.3-288.6 141.6z"
+                        p-id="2902" fill="#ffffff"></path>
+                </svg>
+                
+                <span> <a href="">Godguns</a></span>
+                <p>2021-06-15 15:09:06</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="article-content">
+    <div id="article" class="content">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>作为一名前端er，浏览器和我们在工作中几乎是抬头不见低头见，除了高效的实现一些web功能以外，我们还需要深入浏览器，去了解一些原理知识，那我们就在这里一起讨论学习一下浏览器的渲染知识，最后实现一个浏览器对html的解析器   </p>
+</blockquote>
+<h3 id="Critical-Rendering-Path"><a href="#Critical-Rendering-Path" class="headerlink" title="Critical Rendering Path"></a>Critical Rendering Path</h3><p>Critical Rendering Path，中文翻译过来，叫做关键渲染路径。指的是浏览器从请求HTML，CSS，JavaScript文件开始，到将它们最终以像素输出到屏幕上这一过程。   </p>
+<blockquote>
+<p>我们知道浏览器解析html文件的时候，其实是根据html文件，分析标签，然后生成ast（抽象语法树），然后根据ast再生成对应的dom树，同时负责css进程的部分分析css文件，生成cssom树 (CSS Object Model，CSS对象模型)，构建过程类似DOM，当HTML解析中遇到<link>标签时，会请求对应的CSS文件，当CSS文件就位时便开始解析它（如果遇到行内<style>时则直接解析），这一解析过程可以和构建DOM同时进行。 </p>
+</blockquote>
+<h2 id="构建dom"><a href="#构建dom" class="headerlink" title="构建dom"></a>构建dom</h2><p><img src="https://user-gold-cdn.xitu.io/2020/4/19/1719037507bd68b5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="image"></p>
+<h2 id="构建css"><a href="#构建css" class="headerlink" title="构建css"></a>构建css</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">假设有如下CSS代码：</span><br><span class="line"></span><br><span class="line">body &#123; font-size: 16px &#125;</span><br><span class="line">p &#123; font-weight: bold &#125;</span><br><span class="line">span &#123; color: red &#125;</span><br><span class="line">p span &#123; display: none &#125;</span><br><span class="line">img &#123; float: right &#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://user-gold-cdn.xitu.io/2020/4/19/1719037818c2bceb?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="image">   </p>
+<h2 id="构建渲染树"><a href="#构建渲染树" class="headerlink" title="构建渲染树"></a>构建渲染树</h2><p>这也是关键的一步，浏览器使用DOM和CSSOM构建出Render Tree。此时不像构建DOM一样把所有节点构建出来，浏览器只构建需要在屏幕上显示的部分，因此像<head>,<meta>这些标签就无需构建了。同时，对于display: none的元素，也无需构建。   </p>
+<p><img src="https://user-gold-cdn.xitu.io/2020/4/19/17190380705c9ca0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="image"><br>然后通过我们耳熟能详的浏览器layout和paint渲染这颗树到浏览器上<br>本篇文章主要介绍实现解析html文件，分析各种嵌套标签，生成一个简单的抽象语法树   </p>
+<h2 id="思路分析"><a href="#思路分析" class="headerlink" title="思路分析"></a>思路分析</h2><p>实现htmlparser主要分为词法分析和语法分析两步</p>
+<h6 id="词法分析需要把每一种类型的-token-识别出来，具体的类型有："><a href="#词法分析需要把每一种类型的-token-识别出来，具体的类型有：" class="headerlink" title="词法分析需要把每一种类型的 token 识别出来，具体的类型有："></a>词法分析需要把每一种类型的 token 识别出来，具体的类型有：</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">开始标签，如 &lt;div&gt;</span><br><span class="line">结束标签，如 &lt;/div&gt;</span><br><span class="line">注释标签，如 &lt;!--comment--&gt;</span><br><span class="line">doctype 标签，如 &lt;!doctype html&gt;</span><br><span class="line">text，如 aaa</span><br><span class="line">```   </span><br><span class="line">###### 语法分析 语法分析就是对上面分出的 token 进行组装，生成 ast。   </span><br><span class="line">说的简单就是一句话，词法分析是将各种标签提取出来，语法分析是分析其中的嵌套关系，生成ast</span><br><span class="line">## 那么，ast到底长什么样呢？</span><br><span class="line">![image](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/669b57cdec0d46d7868e73ab4bf4900f~tplv-k3u1fbpfcp-watermark.image)   </span><br><span class="line">## 其实它就是一个对象，包含了各个标签的特性和他们的嵌套关系   </span><br><span class="line">&gt; 所以，我们的目的就是为了将html文件，通过js变成这样的一个ast对象   </span><br><span class="line"></span><br><span class="line">首先，我们要把 startTag、endTag、comment、docType 还有 attribute 的正则表达式写出来：   </span><br><span class="line">正则</span><br><span class="line"></span><br><span class="line">### 结束标签就是 &lt;/ 开头，然后 a-zA-Z0-9 和 - 出现多次，之后是 &gt;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>const endTagReg = /^&lt;/([a-zA-Z0-9-]+)&gt;/;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 注释标签是 &lt;!-- 和 --&gt; 中间夹着非 --&gt; 字符出现任意次</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>const commentReg = /^&lt;!--[^(–&gt;)]*--&gt;/;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">### doctype 标签是 &lt;!doctype 加非 &gt; 字符出现多次，加 &gt;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>const docTypeReg = /^<!doctype [^>]+&gt;/;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### attribute 是多个空格开始，加 a-zA-Z0-9 或 - 出现多次，接一个 =，之后是非 &gt; 字符出多次</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>const attributeReg = /^(?:[ ]+([a-zA-Z0-9-]+=[^&gt;]+))/;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 开始标签是 &lt; 开头，接 a-zA-Z0-9 和 - 出现多次，然后是属性的正则，最后是 &gt; 结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>const startTagReg = /^&lt;([a-zA-Z0-9-]+)(?:([ ]+[a-zA-Z0-9-]+=[^&gt; ]+))*&gt;/;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">## 之后上打了注释的代码   </span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>//开始标签<br>const startTagReg = /^&lt;([a-zA-Z0-9-]+)(?:([ ]+[a-zA-Z0-9-]+=[^&gt; ]+))*&gt;/;<br>//标签内属性<br>const attributeReg = /^(?:[ ]+([a-zA-Z0-9-]+=[^&gt; ]+))/;<br>//结束标签<br>const endTagReg = /^&lt;/([a-zA-Z0-9-]+)&gt;/;<br>//注释标签<br>const commentReg = /^&lt;!--[^(–&gt;)]*--&gt;/;<br>//文档类型标签<br>const docTypeReg = /^<!doctype [^>]+&gt;/;</p>
+<p>function parse(html,options) {<br>    // body…<br>    function advance(len){<br>        html = html.slice(len)<br>    }<br>    while(html){<br>        if(html.startsWith(‘&lt;’)){<br>                        //处理注释标签字符串<br>            let commentMatch = html.match(commentReg)；<br>            if (commentMatch) {<br>                    options.onComment({<br>                        type: ‘comment’,<br>                        value: commentMatch[0]<br>                    })<br>                    advance(commentMatch[0].length);<br>                    continue;<br>            }<br>            //处理文档类型标签字符串<br>            let doctypeMatch = html.match(docTypeReg)；<br>                if (docTypeMatch) {<br>                    options.onDoctype({<br>                        type: ‘docType’,<br>                        value: docTypeMatch[0]<br>                    });<br>                    advance(docTypeMatch[0].length);<br>                    continue;<br>                }<br>            //处理文档标签开始字符串<br>            let startTagMatch = html.match(startTagReg)；<br>            if(startTagMatch) {<br>                options.onStartTag({<br>                    type: ‘tagStart’,<br>                    value: startTagMatch[1]<br>                });</p>
+<pre><code>            advance(startTagMatch[1].length + 1);
+            let attributeMath;
+            //在标签内遍历属性
+            while(attributeMath = html.match(attributeReg)) &#123;
+                options.onAttribute(&#123;
+                    type: &#39;attribute&#39;,
+                    value: attributeMath[1]
+                &#125;);
+                advance(attributeMath[0].length);
+            &#125;
+            advance(1);
+            continue;
+        &#125;
+    &#125;else&#123;
+         //处理标签内文本
+        let textEndIndex = html.indexOf(&#39;&lt;&#39;);
+        options.onText(&#123;
+            type: &#39;text&#39;,
+            value: html.slice(0, textEndIndex)
+        &#125;);
+        textEndIndex = textEndIndex === -1 ? html.length: textEndIndex;
+        advance(textEndIndex);
+    &#125;
+&#125;
+</code></pre>
+<p>}<br>function parserHtml(str){<br>    let ast = {<br>        children :[]<br>    };<br>    let currentNode = ast;<br>    let parentNode = null;<br>    parse(str,{<br>        onComment(node) {<br>        },<br>        onStartTag(token) {<br>            const tag = {<br>                tagName: token.value,<br>                attributes: [],<br>                text: ‘’,<br>                children: []<br>            };<br>            curParent.children.push(tag);<br>            prevParent = curParent;<br>            curParent = tag;<br>        },<br>        onAttribute(token) {<br>            const [ name, value ] = token.value.split(‘=’);<br>            curParent.attributes.push({<br>                name,<br>                value: value.replace(/^[‘“]/, ‘’).replace(/[‘“]$/, ‘’)<br>            });<br>        },<br>        onEndTag(token) {<br>            curParent = prevParent;<br>        },<br>        onDoctype(token) {<br>        },<br>        onText(token) {<br>            curParent.text = token.value;<br>        }<br>    })<br>     return ast.children[0];</p>
+<p>}</p>
+<pre><code>## 总结   
+了解htmlparser是很重要的，大名鼎鼎的vue的模版编译，react的jsx语法，都是基于htmlparser做的，同时这个知识点也是淘系前端的多年不变的面试题之一，拿到ast后就可以构建一个渲染方法，关于渲染的部分我们之后讨论吧～   
+##### 参考博客 掘金 https://juejin.cn/post/6970706892632883213
+
+
+</code></pre>
+
+    </div>
+</div>
+<style>
+    #noneimg img {
+        display: none;
+        z-index: 109;
+        width: 600px !important;
+        border-radius: 0px;
+        position: fixed;
+        box-shadow: 0 0 0px #c3c3c300 !important;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto !important;
+    }
+
+    @media screen and (max-width:600px) {
+        #noneimg img {
+            width: 88%
+        }
+    }
+</style>
+<script>
+    $(function () { $('#article').click(function (e) { if (e.target.tagName == "IMG") { if ($('#nonediv').length == 0) { let MImg = `<div id='noneimg'><img src='${e.target.currentSrc}'></div>`; let MDiv = "<div id='nonediv' style='cursor: pointer;display: none; position: fixed;left: 0;top: 0; right: 0;bottom: 0;background-color: #333;opacity:0.5;z-index: 108;'></div>"; $('#article').append(MDiv); $('#article').append(MImg); $("#nonediv").fadeIn("slow"); $("#noneimg img").fadeIn("slow") } } else { if ($('#nonediv').length !== 0) { $("#noneimg ").fadeOut("slow"); $("#nonediv").fadeOut("slow"); setTimeout(function () { $('#nonediv').remove(); $('#noneimg').remove() }, 500) } } }); $('.article-content').addClass('content-move') });
+</script>
+<div class="Last-Next">
+    
+
+    
+    <a href="/2021/06/10/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC2/">
+        <div class="next">
+            <span>下一篇</span>
+            <p>响应式系统原理</p>
+        </div>
+    </a>
+    
+</div>
+		
+<link rel="stylesheet" href="/css/food.css">
+
+<div class="footer">
+	<div class="Copyright">
+		©2021 By Godguns. 主题：<a
+			style="text-decoration: none;display: contents; color: #898F9F;"
+			target="_blank" rel="noopener" href="https://github.com/qiaobug/hexo-theme-quiet">Quiet</a>
+	</div>
+	<div class="contact">
+		
+		<a target="_blank" rel="noopener" href="https://github.com/qiaobug">
+			<img src="https://cdn.jsdelivr.net/gh/duogongneng/MyBlogImg/imggithub.png" alt="Quiet主题">
+		</a>
+		
+	</div>
+</div>
+
+<script src="/js/jquery.min.js"></script>
+
+
+<script src="/js/gotop.js"></script>
+
+
+<style type="text/css">
+    @media screen and (min-width: 600px) {
+        .goTop>span {
+            display: block;
+            border-radius: 50%;
+            width: 66px;
+            height: 66px;
+            cursor: pointer;
+            opacity: 0.8;
+            background: rgba(18, 24, 58, 0.06);
+            text-align: center;
+            border: 1px solid rgba(18, 24, 58, 0.06);
+
+            transition: border .5s;
+            -moz-transition: border .5s;
+            /* Firefox 4 */
+            -webkit-transition: border .5s;
+            /* Safari 和 Chrome */
+            -o-transition: border .5s;
+            /* Opera */
+        }
+
+        .goTop>span:hover {
+            border: 1px solid #6680B3;
+        }
+
+
+        .goTop {
+            position: fixed;
+            right: 30px;
+            bottom: 80px;
+        }
+
+        .goTop>span>svg {
+            width: 30px;
+            height: 30px;
+            margin-top: 17.5px;
+            opacity: 0.7;
+        }
+
+    }
+
+    @media screen and (max-width: 600px) {
+        .goTop {
+            display: none;
+        }
+    }
+</style>
+<div class="goTop" id="js-go_top">
+    <span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <g>
+                <path d="M13 12v8h-2v-8H4l8-8 8 8z"></path>
+            </g>
+        </svg>
+    </span>
+</div>
+<script>
+    $('#js-go_top').gotoTop({ offset: 500, speed: 300, animationShow: { 'transform': 'translate(0,0)', 'transition': 'transform .5s ease-in-out' }, animationHide: { 'transform': 'translate(100px,0)', 'transition': 'transform .5s ease-in-out' } });
+</script>
+<script>
+	console.log('\n %c Hexo-Quiet 主题 %c https://github.com/QiaoBug/hexo-theme-quiet \n', 'color: #fadfa3; background: #030307; padding:5px 0;', 'background: #fadfa3; padding:5px 0;')
+</script>
+	</body>
+
+</html>

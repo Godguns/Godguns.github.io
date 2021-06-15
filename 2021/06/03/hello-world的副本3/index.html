@@ -3,7 +3,7 @@
 
 	<head>
 		
-<title>vue3的新知识-Godguns</title>
+<title>vue依赖收集-Godguns</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -255,7 +255,7 @@
             
             
         </ul>
-        <h1>vue3的新知识</h1>
+        <h1>vue依赖收集</h1>
         <div class="article-info">
             <div class="article-author">
                 
@@ -267,26 +267,15 @@
                 </svg>
                 
                 <span> <a href="">Godguns</a></span>
-                <p>2020-11-03 20:33:36</p>
+                <p>2021-06-03 10:00:20</p>
             </div>
         </div>
     </div>
 </div>
 <div class="article-content">
     <div id="article" class="content">
-        <p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5751a5470d0b442a86607a147833bfbd~tplv-k3u1fbpfcp-zoom-1.image" alt="image">    </p>
-<blockquote>
-<p>最近一周在学习vue3的新知识，发现新增的东西不算多，但是都是硬货，非常非常好用！以下是我总结的一些小小细节，配合官网迁移文档食用更佳～</p>
-</blockquote>
-<h3 id="Vue3-ref、reactive、toRef、toRefs的区别"><a href="#Vue3-ref、reactive、toRef、toRefs的区别" class="headerlink" title="Vue3 ref、reactive、toRef、toRefs的区别"></a>Vue3 ref、reactive、toRef、toRefs的区别</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010059669/article/details/112287552">https://blog.csdn.net/u010059669/article/details/112287552</a>   </p>
-<h3 id="Vue3中v-for-Array-Refs"><a href="#Vue3中v-for-Array-Refs" class="headerlink" title="Vue3中v-for Array Refs"></a>Vue3中v-for Array Refs</h3><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6912705483929288718">https://juejin.cn/post/6912705483929288718</a>   </p>
-<h3 id="Vue3中watchEffect用途"><a href="#Vue3中watchEffect用途" class="headerlink" title="Vue3中watchEffect用途"></a>Vue3中watchEffect用途</h3><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000023669309">https://segmentfault.com/a/1190000023669309</a>   </p>
-<h3 id="Vue中3-0-传送teleport"><a href="#Vue中3-0-传送teleport" class="headerlink" title="Vue中3.0 传送teleport"></a>Vue中3.0 传送teleport</h3><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6911324790863167502">https://juejin.cn/post/6911324790863167502</a>   </p>
-<h3 id="Vue3-中的片段"><a href="#Vue3-中的片段" class="headerlink" title="Vue3 中的片段"></a>Vue3 中的片段</h3><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000021498244">https://segmentfault.com/a/1190000021498244</a>      </p>
-<h3 id="Vue3-新特性与api变更整体浏览"><a href="#Vue3-新特性与api变更整体浏览" class="headerlink" title="Vue3 新特性与api变更整体浏览"></a>Vue3 新特性与api变更整体浏览</h3><p><a target="_blank" rel="noopener" href="https://v3.cn.vuejs.org/guide/migration/introduction.html#%E5%85%A8%E5%B1%80-api">https://v3.cn.vuejs.org/guide/migration/introduction.html#%E5%85%A8%E5%B1%80-api</a>   </p>
-<blockquote>
-<p>还在更新中···</p>
-</blockquote>
+        <h2 id="理解vue依赖收集"><a href="#理解vue依赖收集" class="headerlink" title="理解vue依赖收集"></a>理解vue依赖收集</h2><h3 id="Observer类主要干了以下几件事"><a href="#Observer类主要干了以下几件事" class="headerlink" title="Observer类主要干了以下几件事"></a>Observer类主要干了以下几件事</h3><p>给data绑定一个__ob__属性，用来存放Observer实例<br>如果data是Object,遍历对象的每一个属性进行defineReactive 绑定    </p>
+<p>如果data是Array, 则需要对每一个成员进行observe。vue.js会重写Array的push、pop、shift、unshift、splice、sort、reverse这7个方法，保证之后pop/push等操作进去的对象也有进行双向绑定. (具体代码参见observer/array.js)<br>参考图<br><img src="https://img-blog.csdnimg.cn/20191011093700606.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTEzNzQzMjk=,size_16,color_FFFFFF,t_70" alt="image"></p>
 
     </div>
 </div>
@@ -316,19 +305,19 @@
 </script>
 <div class="Last-Next">
     
-    <a href="/2020/11/03/hello-world/">
+    <a href="/2021/06/10/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC2/">
         <div class="last">
             <span>上一篇</span>
-            <p>一个简约扁平化的Hexo静态主题博客-Quiet</p>
+            <p>响应式系统原理</p>
         </div>
     </a>
     
 
     
-    <a href="/2020/11/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC2/">
+    <a href="/2021/05/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC/">
         <div class="next">
             <span>下一篇</span>
-            <p>响应式系统原理</p>
+            <p>vue3的新知识</p>
         </div>
     </a>
     

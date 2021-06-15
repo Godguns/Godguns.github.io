@@ -3,7 +3,7 @@
 
 	<head>
 		
-<title>响应式系统原理-Godguns</title>
+<title>vue3的新知识-Godguns</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -255,7 +255,7 @@
             
             
         </ul>
-        <h1>响应式系统原理</h1>
+        <h1>vue3的新知识</h1>
         <div class="article-info">
             <div class="article-author">
                 
@@ -267,68 +267,26 @@
                 </svg>
                 
                 <span> <a href="">Godguns</a></span>
-                <p>2020-11-03 20:33:36</p>
+                <p>2021-05-03 09:30:17</p>
             </div>
         </div>
     </div>
 </div>
 <div class="article-content">
     <div id="article" class="content">
-        <blockquote>
-<p>有些地方说观察者模式和发布/订阅模式是一样的，其实是不完全等同的，发布/订阅模式中，其解耦能力更近一步，发布者只要做好消息的发布，而不关心消息有没有订阅者订阅。而观察者模式则要求两端同时存在   </p>
+        <p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5751a5470d0b442a86607a147833bfbd~tplv-k3u1fbpfcp-zoom-1.image" alt="image">    </p>
+<blockquote>
+<p>最近一周在学习vue3的新知识，发现新增的东西不算多，但是都是硬货，非常非常好用！以下是我总结的一些小小细节，配合官网迁移文档食用更佳～</p>
 </blockquote>
-<p>Vue能够实现当一个数据变更时，视图就进行刷新，而且用到这个数据的其他地方也会同步变更；而且，这个数据必须是在有被依赖的情况下，视图和其他用到数据的地方才会变更。 所以，Vue要能够知道一个数据是否被使用，<strong>实现这种机制的技术叫做依赖收集</strong><br><img src="https://pic1.zhimg.com/80/v2-5de7af21d4c2de951720c006f84b98fc_720w.jpg" alt="image"><br>每个组件都有自己相应的watcher实例，在渲染组件的过程中，会把属性记录为依赖，我们操纵一个数据时，依赖项的setter会被调用，从而通知watcher重新计算，从而致使与之相关联的组件得以更新<br>所以在getter里，我们进行依赖收集（所谓依赖，就是这个组件所需要依赖到的数据），当依赖的数据被设置时，setter能获得这个通知，从而告诉render()函数进行重新计算。</p>
-<h3 id="Vue依赖收集与观察者模式"><a href="#Vue依赖收集与观察者模式" class="headerlink" title="Vue依赖收集与观察者模式"></a>Vue依赖收集与观察者模式</h3><p>Vue源码中，实现依赖收集主要有三个类，<br>    Dep: 扮演观察目标(被观察者)的角色，每一个数据都会有Dep实例，它内部有subs队列，保存着依赖本数据的观察者，当本数据发生变化时，调用dep.notify通知所有观察者，watcher:扮演观察者的角色，进行观察者函数的包装<br>==关于 Observer的解释就是这是一个处理依赖收集中对数组和对象监听的类==，如果value是个对象，就执行walk()过程，遍历对象把每一项数据都变为可观测数据（调用defineReactive方法处理） - 如果value是个数组，就执行observeArray()过程，递归地对数组元素调用observe()，以便能够对元素还是数组的情况进行处理   </p>
-<h3 id="如何观察数组变化"><a href="#如何观察数组变化" class="headerlink" title="如何观察数组变化"></a>如何观察数组变化</h3><p>在处理数组变化时，Vue是先对数组进行一个增强操作，就是在数组的原型链上定义一系列操作（保留原来操作的基础上，植入我们特定的操作代码）  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">const arrayMethods = Object.create(Array.prototype); </span><br><span class="line">// 形成：arrayMethods.__proto__ -&gt; Array.prototype</span><br><span class="line">const originalPush = arrayMethods.push;</span><br><span class="line">Object.defineProperty(arrayMethods, &#x27;push&#x27;, &#123;</span><br><span class="line">    configurable: true,</span><br><span class="line">    enumerable: false,</span><br><span class="line">    writable: true,</span><br><span class="line">    value(...args) &#123;</span><br><span class="line">        const result = originalPush.apply(this, args);</span><br><span class="line">        console.log(&#x27;对数组进行了push操作，加入了值：&#x27;, args);</span><br><span class="line">        return result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line">data.arr.__proto__ = arrayMethods</span><br><span class="line">data.arr.push([5, 6], 7) // 对数组进行了push操作，加入了值：[5, 6], 7</span><br><span class="line">```    </span><br><span class="line">所以，只要对每一个数组操作方法进行这么一个处理，那么我们也有办法在数组变更时，通知观察者了，Vue的具体实现如下  </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<pre><code>overrideArrayProto(array)&#123;
-        // 保存原始 Array 原型
-    var originalProto = Array.prototype,
-        // 通过 Object.create 方法创建一个对象，该对象的原型就是Array.prototype
-        overrideProto = Object.create(Array.prototype),
-        self = this,
-        result;
-    // 遍历要重写的数组方法
-    Object.keys(OAM).forEach(function(key, index, array)&#123;
-        var method = OAM[index],
-            oldArray = [];
-        // 使用 Object.defineProperty 给 overrideProto 添加属性，属性的名称是对应的数组函数名，值是函数
-        Object.defineProperty(overrideProto, method, &#123;
-            value: function()&#123;
-                oldArray = this.slice(0);
-
-                var arg = [].slice.apply(arguments);
-                // 调用原始 原型 的数组方法
-                result = originalProto[method].apply(this, arg);
-                // 对新的数组进行监测
-                self.observe(this);
-                // 执行回调
-                self.$callback(this, oldArray);
-
-                return result;
-            &#125;,
-            writable: true,
-            enumerable: false,
-            configurable: true
-        &#125;);
-    &#125;, this);
-
-    // 最后 让该数组实例的 __proto__ 属性指向 假的原型 overrideProto
-    array.__proto__ = overrideProto;
-
-&#125;
-</code></pre>
-<p>}</p>
-<pre><code>### 先总结一下Data、Observer、Dep和Watcher之间的关系   
-&gt; Data通过Observer转换成了getter/setter的形式来追踪变化。
-
-当外界通过Watcher读取数据时，会触发getter从而将Watcher添加到依赖中。
-
-当数据发生了变化时，会触发setter，从而向Dep中的依赖（Watcher）发送通知。
-
-Watcher接收到通知后，会向外界发送通知，变化通知到外界后可能会触发视图更新，也有可能触发用户的某个回调函数等。
-</code></pre>
+<h3 id="Vue3-ref、reactive、toRef、toRefs的区别"><a href="#Vue3-ref、reactive、toRef、toRefs的区别" class="headerlink" title="Vue3 ref、reactive、toRef、toRefs的区别"></a>Vue3 ref、reactive、toRef、toRefs的区别</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010059669/article/details/112287552">https://blog.csdn.net/u010059669/article/details/112287552</a>   </p>
+<h3 id="Vue3中v-for-Array-Refs"><a href="#Vue3中v-for-Array-Refs" class="headerlink" title="Vue3中v-for Array Refs"></a>Vue3中v-for Array Refs</h3><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6912705483929288718">https://juejin.cn/post/6912705483929288718</a>   </p>
+<h3 id="Vue3中watchEffect用途"><a href="#Vue3中watchEffect用途" class="headerlink" title="Vue3中watchEffect用途"></a>Vue3中watchEffect用途</h3><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000023669309">https://segmentfault.com/a/1190000023669309</a>   </p>
+<h3 id="Vue中3-0-传送teleport"><a href="#Vue中3-0-传送teleport" class="headerlink" title="Vue中3.0 传送teleport"></a>Vue中3.0 传送teleport</h3><p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6911324790863167502">https://juejin.cn/post/6911324790863167502</a>   </p>
+<h3 id="Vue3-中的片段"><a href="#Vue3-中的片段" class="headerlink" title="Vue3 中的片段"></a>Vue3 中的片段</h3><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000021498244">https://segmentfault.com/a/1190000021498244</a>      </p>
+<h3 id="Vue3-新特性与api变更整体浏览"><a href="#Vue3-新特性与api变更整体浏览" class="headerlink" title="Vue3 新特性与api变更整体浏览"></a>Vue3 新特性与api变更整体浏览</h3><p><a target="_blank" rel="noopener" href="https://v3.cn.vuejs.org/guide/migration/introduction.html#%E5%85%A8%E5%B1%80-api">https://v3.cn.vuejs.org/guide/migration/introduction.html#%E5%85%A8%E5%B1%80-api</a>   </p>
+<blockquote>
+<p>还在更新中···</p>
+</blockquote>
 
     </div>
 </div>
@@ -358,19 +316,19 @@ Watcher接收到通知后，会向外界发送通知，变化通知到外界后�
 </script>
 <div class="Last-Next">
     
-    <a href="/2020/11/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC/">
+    <a href="/2021/06/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC3/">
         <div class="last">
             <span>上一篇</span>
-            <p>vue3的新知识</p>
+            <p>vue依赖收集</p>
         </div>
     </a>
     
 
     
-    <a href="/2020/11/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC3/">
+    <a href="/2020/11/03/hello-world/">
         <div class="next">
             <span>下一篇</span>
-            <p>vue依赖收集</p>
+            <p>computed 的工作原理</p>
         </div>
     </a>
     
