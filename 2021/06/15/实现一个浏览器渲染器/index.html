@@ -278,8 +278,6 @@
 <p>作为一名前端er，浏览器和我们在工作中几乎是抬头不见低头见，除了高效的实现一些web功能以外，我们还需要深入浏览器，去了解一些原理知识，那我们就在这里一起讨论学习一下浏览器的渲染知识，最后实现一个浏览器对html的解析器   </p>
 </blockquote>
 <h3 id="Critical-Rendering-Path"><a href="#Critical-Rendering-Path" class="headerlink" title="Critical Rendering Path"></a>Critical Rendering Path</h3><p>Critical Rendering Path，中文翻译过来，叫做关键渲染路径。指的是浏览器从请求HTML，CSS，JavaScript文件开始，到将它们最终以像素输出到屏幕上这一过程。   </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我们知道浏览器解析html文件的时候，其实是根据html文件，分析标签，然后生成ast（抽象语法树），然后根据ast再生成对应的dom树，同时负责css进程的部分分析css文件，生成cssom树 (CSS Object Model，CSS对象模型)，构建过程类似DOM，当HTML解析中遇到&lt;link&gt;标签时，会请求对应的CSS文件，当CSS文件就位时便开始解析它（如果遇到行内&lt;style&gt;时则直接解析），这一解析过程可以和构建DOM同时进行。 </span><br></pre></td></tr></table></figure>
-
 <h2 id="构建dom"><a href="#构建dom" class="headerlink" title="构建dom"></a>构建dom</h2><p><img src="https://user-gold-cdn.xitu.io/2020/4/19/1719037507bd68b5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="image"></p>
 <h2 id="构建css"><a href="#构建css" class="headerlink" title="构建css"></a>构建css</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">假设有如下CSS代码：</span><br><span class="line"></span><br><span class="line">body &#123; font-size: 16px &#125;</span><br><span class="line">p &#123; font-weight: bold &#125;</span><br><span class="line">span &#123; color: red &#125;</span><br><span class="line">p span &#123; display: none &#125;</span><br><span class="line">img &#123; float: right &#125;</span><br></pre></td></tr></table></figure>
 
@@ -297,42 +295,122 @@
 <p>const attributeReg = /^(?:[ ]+([a-zA-Z0-9-]+=[^&gt;]+))/;</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 开始标签是 &lt; 开头，接 a-zA-Z0-9 和 - 出现多次，然后是属性的正则，最后是 &gt; 结尾</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p>const startTagReg = /^&lt;([a-zA-Z0-9-]+)(?:([ ]+[a-zA-Z0-9-]+=[^&gt; ]+))*&gt;/;</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">## 之后上打了注释的代码   </span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>//开始标签<br>const startTagReg = /^&lt;([a-zA-Z0-9-]+)(?:([ ]+[a-zA-Z0-9-]+=[^&gt; ]+))*&gt;/;<br>//标签内属性<br>const attributeReg = /^(?:[ ]+([a-zA-Z0-9-]+=[^&gt; ]+))/;<br>//结束标签<br>const endTagReg = /^&lt;/([a-zA-Z0-9-]+)&gt;/;<br>//注释标签<br>const commentReg = /^&lt;!--[^(–&gt;)]*--&gt;/;<br>//文档类型标签<br>const docTypeReg = /^<!doctype [^>]+&gt;/;</p>
-<p>function parse(html,options) {<br>    // body…<br>    function advance(len){<br>        html = html.slice(len)<br>    }<br>    while(html){<br>        if(html.startsWith(‘&lt;’)){<br>                        //处理注释标签字符串<br>            let commentMatch = html.match(commentReg)；<br>            if (commentMatch) {<br>                    options.onComment({<br>                        type: ‘comment’,<br>                        value: commentMatch[0]<br>                    })<br>                    advance(commentMatch[0].length);<br>                    continue;<br>            }<br>            //处理文档类型标签字符串<br>            let doctypeMatch = html.match(docTypeReg)；<br>                if (docTypeMatch) {<br>                    options.onDoctype({<br>                        type: ‘docType’,<br>                        value: docTypeMatch[0]<br>                    });<br>                    advance(docTypeMatch[0].length);<br>                    continue;<br>                }<br>            //处理文档标签开始字符串<br>            let startTagMatch = html.match(startTagReg)；<br>            if(startTagMatch) {<br>                options.onStartTag({<br>                    type: ‘tagStart’,<br>                    value: startTagMatch[1]<br>                });</p>
-<pre><code>            advance(startTagMatch[1].length + 1);
-            let attributeMath;
-            //在标签内遍历属性
-            while(attributeMath = html.match(attributeReg)) &#123;
-                options.onAttribute(&#123;
-                    type: &#39;attribute&#39;,
-                    value: attributeMath[1]
-                &#125;);
-                advance(attributeMath[0].length);
+<pre><code>## 之后上打了注释的代码   
+
+```javascript
+//开始标签
+const startTagReg = /^&lt;([a-zA-Z0-9\-]+)(?:([ ]+[a-zA-Z0-9\-]+=[^&gt; ]+))*&gt;/;
+//标签内属性
+const attributeReg = /^(?:[ ]+([a-zA-Z0-9\-]+=[^&gt; ]+))/;
+//结束标签
+const endTagReg = /^&lt;\/([a-zA-Z0-9\-]+)&gt;/;
+//注释标签
+const commentReg = /^&lt;!\-\-[^(--&gt;)]*\-\-&gt;/;
+//文档类型标签
+const docTypeReg = /^&lt;!doctype [^&gt;]+&gt;/;
+
+
+function parse(html,options) &#123;
+    // body...
+    function advance(len)&#123;
+        html = html.slice(len)
+    &#125;
+    while(html)&#123;
+        if(html.startsWith(&#39;&lt;&#39;))&#123;
+                        //处理注释标签字符串
+            let commentMatch = html.match(commentReg)；
+            if (commentMatch) &#123;
+                    options.onComment(&#123;
+                        type: &#39;comment&#39;,
+                        value: commentMatch[0]
+                    &#125;)
+                    advance(commentMatch[0].length);
+                    continue;
             &#125;
-            advance(1);
-            continue;
+            //处理文档类型标签字符串
+            let doctypeMatch = html.match(docTypeReg)；
+                if (docTypeMatch) &#123;
+                    options.onDoctype(&#123;
+                        type: &#39;docType&#39;,
+                        value: docTypeMatch[0]
+                    &#125;);
+                    advance(docTypeMatch[0].length);
+                    continue;
+                &#125;
+            //处理文档标签开始字符串
+            let startTagMatch = html.match(startTagReg)；
+            if(startTagMatch) &#123;    
+                options.onStartTag(&#123;
+                    type: &#39;tagStart&#39;,
+                    value: startTagMatch[1]
+                &#125;);
+
+                advance(startTagMatch[1].length + 1);
+                let attributeMath;
+                //在标签内遍历属性
+                while(attributeMath = html.match(attributeReg)) &#123;
+                    options.onAttribute(&#123;
+                        type: &#39;attribute&#39;,
+                        value: attributeMath[1]
+                    &#125;);
+                    advance(attributeMath[0].length);
+                &#125;
+                advance(1);
+                continue;
+            &#125;
+        &#125;else&#123;
+             //处理标签内文本
+            let textEndIndex = html.indexOf(&#39;&lt;&#39;);
+            options.onText(&#123;
+                type: &#39;text&#39;,
+                value: html.slice(0, textEndIndex)
+            &#125;);
+            textEndIndex = textEndIndex === -1 ? html.length: textEndIndex;
+            advance(textEndIndex);
         &#125;
-    &#125;else&#123;
-         //处理标签内文本
-        let textEndIndex = html.indexOf(&#39;&lt;&#39;);
-        options.onText(&#123;
-            type: &#39;text&#39;,
-            value: html.slice(0, textEndIndex)
-        &#125;);
-        textEndIndex = textEndIndex === -1 ? html.length: textEndIndex;
-        advance(textEndIndex);
     &#125;
 &#125;
-</code></pre>
-<p>}<br>function parserHtml(str){<br>    let ast = {<br>        children :[]<br>    };<br>    let currentNode = ast;<br>    let parentNode = null;<br>    parse(str,{<br>        onComment(node) {<br>        },<br>        onStartTag(token) {<br>            const tag = {<br>                tagName: token.value,<br>                attributes: [],<br>                text: ‘’,<br>                children: []<br>            };<br>            curParent.children.push(tag);<br>            prevParent = curParent;<br>            curParent = tag;<br>        },<br>        onAttribute(token) {<br>            const [ name, value ] = token.value.split(‘=’);<br>            curParent.attributes.push({<br>                name,<br>                value: value.replace(/^[‘“]/, ‘’).replace(/[‘“]$/, ‘’)<br>            });<br>        },<br>        onEndTag(token) {<br>            curParent = prevParent;<br>        },<br>        onDoctype(token) {<br>        },<br>        onText(token) {<br>            curParent.text = token.value;<br>        }<br>    })<br>     return ast.children[0];</p>
-<p>}</p>
-<pre><code>## 总结   
-了解htmlparser是很重要的，大名鼎鼎的vue的模版编译，react的jsx语法，都是基于htmlparser做的，同时这个知识点也是淘系前端的多年不变的面试题之一，拿到ast后就可以构建一个渲染方法，关于渲染的部分我们之后讨论吧～   
-##### 参考博客 掘金 https://juejin.cn/post/6970706892632883213
+function parserHtml(str)&#123;
+    let ast = &#123;
+        children :[]
+    &#125;;
+    let currentNode = ast;
+    let parentNode = null;
+    parse(str,&#123;
+        onComment(node) &#123;
+        &#125;,
+        onStartTag(token) &#123;
+            const tag = &#123;
+                tagName: token.value,
+                attributes: [],
+                text: &#39;&#39;,
+                children: []
+            &#125;;
+            curParent.children.push(tag);
+            prevParent = curParent;
+            curParent = tag;
+        &#125;,
+        onAttribute(token) &#123;
+            const [ name, value ] = token.value.split(&#39;=&#39;);
+            curParent.attributes.push(&#123;
+                name,
+                value: value.replace(/^[&#39;&quot;]/, &#39;&#39;).replace(/[&#39;&quot;]$/, &#39;&#39;)
+            &#125;);
+        &#125;,
+        onEndTag(token) &#123;
+            curParent = prevParent;
+        &#125;,
+        onDoctype(token) &#123;
+        &#125;,
+        onText(token) &#123;
+            curParent.text = token.value;
+        &#125;
+    &#125;)
+     return ast.children[0];
 
-
+&#125;
 </code></pre>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>了解htmlparser是很重要的，大名鼎鼎的vue的模版编译，react的jsx语法，都是基于htmlparser做的，同时这个知识点也是淘系前端的多年不变的面试题之一，拿到ast后就可以构建一个渲染方法，关于渲染的部分我们之后讨论吧～<br>参考博客 掘金 <a target="_blank" rel="noopener" href="https://juejin.cn/post/6970706892632883213">https://juejin.cn/post/6970706892632883213</a></p>
 
     </div>
 </div>
