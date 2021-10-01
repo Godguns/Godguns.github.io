@@ -270,25 +270,7 @@
 </div>
 <div class="article-content">
     <div id="article" class="content">
-        <h3 id="手写深拷贝"><a href="#手写深拷贝" class="headerlink" title="手写深拷贝"></a>手写深拷贝</h3><blockquote>
-<p>onst deepClone = function(obj, cache = new WeakMap()) {<br>    // 判断是否是引用数据类型，基础数据类型本身就是地址拷贝<br>    if (obj === null || typeof obj !== “object”) return obj;<br>    if (obj instanceof Date) return new Date(obj); // 处理时间函数<br>    if (obj instanceof RegExp) return new RegExp(obj); // 处理正则<br>    // 判断是否存在循环引用<br>    if (cache.get(obj)) return cache.get(obj);</p>
-</blockquote>
-<pre><code>// 判断是数组还是对象
-const result = obj instanceof Array ? [] : &#123;&#125;;
-//
-cache.set(obj, result);
-// 将每个源对象和拷贝的对象存到cache中，上面判断cache中是否存在循环引用
-for (const key in obj) &#123;
-  if (obj[key] &amp;&amp; typeof obj[key] === &quot;object&quot;) &#123;
-    result[key] = deepClone(obj[key], cache);
-  &#125; else &#123;
-    result[key] = obj[key];
-  &#125;
-&#125;
-return result;
-</code></pre>
-<p>  };<br>```</p>
-
+        <h3 id="手写深拷贝"><a href="#手写深拷贝" class="headerlink" title="手写深拷贝"></a>手写深拷贝</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">const deepClone = function(obj, cache = new WeakMap()) &#123;</span><br><span class="line">    // 判断是否是引用数据类型，基础数据类型本身就是地址拷贝</span><br><span class="line">    if (obj === null || typeof obj !== &quot;object&quot;) return obj;</span><br><span class="line">    if (obj instanceof Date) return new Date(obj); // 处理时间函数</span><br><span class="line">    if (obj instanceof RegExp) return new RegExp(obj); // 处理正则</span><br><span class="line">    // 判断是否存在循环引用</span><br><span class="line">    if (cache.get(obj)) return cache.get(obj);</span><br><span class="line">   </span><br><span class="line">    // 判断是数组还是对象</span><br><span class="line">    const result = obj instanceof Array ? [] : &#123;&#125;;</span><br><span class="line">    //</span><br><span class="line">    cache.set(obj, result);</span><br><span class="line">    // 将每个源对象和拷贝的对象存到cache中，上面判断cache中是否存在循环引用</span><br><span class="line">    for (const key in obj) &#123;</span><br><span class="line">      if (obj[key] &amp;&amp; typeof obj[key] === &quot;object&quot;) &#123;</span><br><span class="line">        result[key] = deepClone(obj[key], cache);</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        result[key] = obj[key];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return result;</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
     </div>
 </div>
 <style>
